@@ -10,9 +10,9 @@ export const authOptions: NextAuthOptions = {
   },
   providers: [
     SpotifyProvider({
-            clientId: '2bdf8353eec24595a90ed5db4a2fa692',
-            clientSecret: 'a0570d00c1ba447d8b86bb5d203f2465',
-            authorization: "https://accounts.spotify.com/authorize?scope=user-read-email,streaming,user-read-private,user-read-playback-state,user-modify-playback-state&response_type=code",
+            clientId: process.env.SPOTIFY_CLIENT_ID,
+            clientSecret: process.env.SPOTIFY_CLIENT_SECRET,
+            authorization: "https://accounts.spotify.com/authorize?scope=user-read-email,user-library-read,streaming,user-read-private,user-read-playback-state,user-modify-playback-state&response_type=code",
       })
   ],
   callbacks: {

@@ -5,13 +5,6 @@ import { signIn } from "next-auth/react"
 import { cn } from "@/lib/utils"
 import { buttonVariants } from "./button"
 import { motion } from "framer-motion"
-// import { cn } from "@/lib/utils"
-// import { buttonVariants } from "@/components/ui/button"
-// import { Input } from "@/components/ui/input"
-// import { Label } from "@/components/ui/label"
-// import { toast } from "@/components/ui/use-toast"
-// import { Icons } from "@/components/icons"
-
 interface UserAuthFormProps extends React.HTMLAttributes<HTMLDivElement> {}
 
 
@@ -28,7 +21,7 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
         }}
         className={cn(buttonVariants({variant: "outline"}))}
         disabled={isLoading}
-        whileHover={{ scale: 1.1 }}
+        whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.9 }}
       >
         {isLoading ? (

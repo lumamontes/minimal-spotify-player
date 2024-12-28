@@ -5,7 +5,6 @@ import { notFound } from "next/navigation";
 
 export default async function Home() {
   const user = await getCurrentTokens()
-
   if (!user) {
     return notFound()
   }
@@ -13,12 +12,10 @@ export default async function Home() {
   return (
     <>
       <main className="relative flex w-full h-full overflow-hidden">
-        {/* aside fixo with spotify player on the bottom left corner  */}
-        <aside className="fixed bottom-0 left-0 flex items-center max-w-sm justify-center md:sw-1/4">
+        <div className="fixed inset-0 flex items-center justify-center max-w-2xl mx-auto">
           {await SpotifyPlayer()}
-        </aside>
-        {/* //Audio Visualizer here */}
-        <AudioVisualizer accessToken={user.accessToken} />
+        </div>
+        <AudioVisualizer  />
       </main>
     </>
 

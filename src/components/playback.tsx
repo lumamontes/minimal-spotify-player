@@ -1,13 +1,10 @@
 // app/components/ClientComponent.js
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import {  useRef } from "react";
 import { ArrowLeft, ArrowRight, Pause, Play } from "lucide-react";
-import { useAtom } from "jotai";
-import { trackDataAtom } from "@/utils/atoms";
-import { SpotifyPlayer, SpotifyTrack } from "@/types/spotify";
 import { motion, useCycle } from "framer-motion";
-import { MenuToggle } from "./menu-toggle";
+import { usePlayer } from "@/hooks/use-player";
 
 const variants = {
   open: {
@@ -72,103 +69,18 @@ const sidebar = {
 export default function Playback({ accessToken }: { accessToken: string }) {
   const [isPlayerOpen, togglePlayerOpen] = useCycle(true, false);
   const containerRef = useRef(null);
-  const [is_paused, setPaused] = useState(false);
-  const [is_active, setActive] = useState(false);
-  const [statePlayer, setPlayer] = useState<SpotifyPlayer | null>(null);
-  const [current_track, setTrack] = useState<SpotifyTrack | null>(null);
 
-  const [trackData, setTrackData] = useAtom(trackDataAtom);
+  const { 
+      isActive,
+      isPaused,
+      currentTrack,
+      nextTrack,
+      previousTrack,
+      togglePlay,
+    } = usePlayer({accessToken});
 
-  function togglePlay() {
-    if (is_paused) {
-      statePlayer?.resume();
-    } else {
-      statePlayer?.pause();
-    }
-  }
 
-  function nextTrack() {
-    statePlayer?.nextTrack();
-  }
-
-  function previousTrack() {
-    statePlayer?.previousTrack();
-  }
-
-  useEffect(() => {
-    const script = document.createElement("script");
-    script.src = "https://sdk.scdn.co/spotify-player.js";
-    script.async = true;
-
-    document.body.appendChild(script);
-    globalThis.window.onSpotifyWebPlaybackSDKReady = () => {
-      const player = new window.Spotify.Player({
-        name: "Audio Visualizer ‍💫",
-        getOAuthToken: (cb) => {
-          cb(accessToken);
-        },
-        volume: 0.5,
-      });
-      setPlayer(player);
-      // Add other player event listeners and methods here
-      player.addListener("ready", ({ device_id }: any) => {
-        console.log("Ready with Device ID", device_id);
-      });
-
-      player.addListener("not_ready", ({ device_id }: any) => {
-        console.log("Device ID has gone offline", device_id);
-      });
-
-      player.addListener("player_state_changed", (state: any) => {
-        if (!state) {
-          return;
-        }
-
-        console.log("state", state);
-        setTrack(state.track_window.current_track);
-
-        console.log("track", state.track_window.current_track.id);
-        setTrackData({
-          isPaused: state.paused,
-          timestamp: state.timestamp,
-          id: state.track_window.current_track.id,
-        });
-        setPaused(state.paused);
-
-        player.addListener("player_state_changed", (state: any) => {
-          if (!state) {
-            return;
-          }
-          setTrack(state.track_window.current_track);
-          setPaused(state.paused);
-          setTrackData({
-            id: state.track_window.current_track.id,
-            timestamp: state.timestamp,
-            isPaused: state.paused,
-          });
-
-          player.getCurrentState().then((state: any) => {
-            console.log("current state", state);
-            if (!state) {
-              setActive(false);
-            } else {
-              setActive(true);
-            }
-          });
-        });
-      });
-
-      player.connect();
-    };
-  }, [accessToken]);
-
-  if (!statePlayer) {
-    return (
-      <p className="container bg-muted text-center py-6 rounded">
-        Connecting to Spotify...
-      </p>
-    );
-  } else if (!is_active) {
+ if (!isActive) {
     return (
       <p className="container bg-muted text-center py-6 rounded">
         Instance not active. Transfer your playback using your Spotify app
@@ -177,7 +89,7 @@ export default function Playback({ accessToken }: { accessToken: string }) {
   } else {
     return (
       <motion.nav
-        className="flex flex-col container bg-muted py-2 gap-2 rounded"
+        className="flex flex-col container justify-center items-center  py-2 gap-2 rounded"
         initial={true}
         animate={isPlayerOpen ? "open" : "closed"}
         custom={100}
@@ -185,23 +97,23 @@ export default function Playback({ accessToken }: { accessToken: string }) {
         variants={playerContainer}
       >
         <motion.div className="background" variants={sidebar} />
-        <motion.div variants={variants} className="flex flex-col gap-2">
-          {current_track && current_track.album.images[0].url ? (
+        <motion.div variants={variants} className="flex flex-col bg-muted justify-center items-center gap-2 p-4 rounded">
+          {currentTrack && currentTrack.album.images[0].url ? (
             <img
-              src={current_track.album.images[0].url}
+              src={currentTrack.album.images[0].url}
               width={200}
               height={200}
               className="rounded"
               alt="Album cover"
             />
           ) : null}
-          <div>
-            <p className="text-foreground">{current_track?.name}</p>
+          <div className="flex flex-col justify-center items-center gap-2">
+            <p className="text-foreground">{currentTrack?.name}</p>
             <p className="text-foreground text-sm">
-              {current_track?.album.name}
+              {currentTrack?.album.name}
             </p>
             <p className="text-foreground font-semibold text-sm">
-              {current_track?.artists[0].name}
+              {currentTrack?.artists[0].name}
             </p>
 
             <div className="flex gap-2">
@@ -219,7 +131,7 @@ export default function Playback({ accessToken }: { accessToken: string }) {
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
               >
-                {is_paused ? <Play size={24} /> : <Pause size={24} />}
+                {isPaused ? <Play size={24} /> : <Pause size={24} />}
               </motion.button>
 
               <motion.button
@@ -233,7 +145,6 @@ export default function Playback({ accessToken }: { accessToken: string }) {
             </div>
           </div>
         </motion.div>
-        <MenuToggle toggle={() => togglePlayerOpen()} />
       </motion.nav>
     );
   }

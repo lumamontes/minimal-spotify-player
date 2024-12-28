@@ -34,11 +34,9 @@ export default async function DashboardLayout({
 
         </div>
       </header>
-      {/* //this div should ocuppy all the screen */}
       <div className="container flex-1 grid md:grid-cols-1 gap-6 py-6">
             {children}
       </div>
-      {/* <SiteFooter className="border-t" /> */}
     </div>
     </>
   )
